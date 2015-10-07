@@ -1,3 +1,20 @@
+"""
+To Do: Persistent data, how does it work, how to make sure using a new file for each session
+
+	- top 20 list needs to display only 20 
+	- error printing and handling
+	- top 20 start parameter for loop
+	- go for templates
+
+"""
+
+
+
+
+
+
+
+
 import os
 from cStringIO import StringIO
 
@@ -63,7 +80,7 @@ class Query_Counter(object):
 					new_self = pickle.loads(new_self_txt)
 				 	if isinstance(new_self, Query_Counter):
 						self = new_self
-		
+
 
 	def pack_up(self):
 		"""Save the object"""
