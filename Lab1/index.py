@@ -6,8 +6,20 @@ from bottle import request, route, run, template
 import pickle
 
 
+
+@route('/index')
+def hello():
+
+	query_count = Query_Counter()
+	queryForm = '<form action="/submit_query" method="post" name="query_form"><input type="text" name="queryTextline"/><input type="submit" name="query_submit" value="submit"/></form>'
+
+	return '<html>'+queryForm +'<div>' + Get_Dictionary_HTML(query_count.dictionary)+'</div></html>'
+
+
 @route('/submit_query', method='POST')
 def new_hello():
+
+	#constructor of query_counter will check for the file, or create one if needed
 	query_count = Query_Counter()
 	queryForm = '<form action="/submit_query" method="post" name="query_form"><input type="textline" name="queryTextline"/><input type="submit" name="query_submit" value="submit"/></form>'
 	
@@ -29,7 +41,7 @@ def new_hello():
 
 
 class Query_Counter(object):
-	"""docstring for Dictionaries"""
+	"""Object for handling data interface requests"""
 
 	dictionary = {}
 	top_20_dict = {}
@@ -51,12 +63,15 @@ class Query_Counter(object):
 					new_self = pickle.loads(new_self_txt)
 				 	if isinstance(new_self, Query_Counter):
 						self = new_self
-
+		
 
 	def pack_up(self):
+		"""Save the object"""
+
 		fp = open('Query_Counter.txt', 'w+')
 		fp.write(pickle.dumps(self))
 		fp.close()
+
 
 
 	def Process_Text(self, txt):
@@ -94,7 +109,7 @@ class Query_Counter(object):
 
 		if not isinstance(self.dictionary, dict):
 			return 'Error not dict'
-
+		#this needs to be changed, need to take first element of the top 20 dictionay
 		lowest = 99999999999999
 		lowest_string = ''
 
@@ -138,17 +153,10 @@ class Query_Counter(object):
 		return self.top_20_dict
 
 
-@route('/index')
-def hello():
-
-	query_count = Query_Counter()
-	queryForm = '<form action="/submit_query" method="post" name="query_form"><input type="text" name="queryTextline"/><input type="submit" name="query_submit" value="submit"/></form>'
-
-	return '<html>'+queryForm +'<div>' + Get_Dictionary_HTML(query_count.dictionary)+'</div></html>'
 
 
 def Get_Dictionary_HTML(dictionary):
-	"""Return html div of dictionary"""
+	"""Return html table of dictionary"""
 	if not isinstance(dictionary, dict):
 		return 'Error not a dictionary'
 
