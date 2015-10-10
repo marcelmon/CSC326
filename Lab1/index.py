@@ -1,13 +1,10 @@
-
-
-
 import os
 from cStringIO import StringIO
 
 from bottle import request, route, run, template
 import pickle
-
-
+"""INSTALATION BY EXECUTING 'python index.py' in terminal located at this file's container directory,
+teardown via ctrl+c in terminal"""
 def Load_And_Unserialize(file_name):
 
 	if os.path.exists(file_name):
@@ -48,25 +45,22 @@ def Swap_In_List(the_list, index_1, index_2):
 
 
 class New_Query_Counter(object):
-
-	"""docstring for """
+	"""Object Containing Persistent Data to be created on startup 
+		and loaded for every page access, then stored after completion
+		create lock for long operations"""
 
 	word_count_table = {}
 
 	top_20_list = []
-	top_20_list_count = 0;
 
 	def __init__(self):
 		self.word_count_table = {}
 		self.top_20_list = []
 
 
-
-
-
 	def Get_Top_20_Tuples(self):
+		"""return a tuple list of the current top_20 of form (word,count)"""
 		return_list = []
-
 		for word in self.top_20_list:
 			count = self.word_count_table[word]
 			return_list.append( (word, count) )
@@ -74,7 +68,8 @@ class New_Query_Counter(object):
 		return return_list
 
 	def Process_Query(self, query_string):
-
+		"""called when bottle receives query request by GET 
+			return the (word, count) list of the current query"""
 		word_array = query_string.split()
 		this_word_count = {}
 
@@ -88,12 +83,13 @@ class New_Query_Counter(object):
 		for word, add_count in this_word_count.iteritems():
 			self.Add_Word_Count(word, add_count)
 
-			if self.Bubble_Top_20_List(word, self.word_count_table[word]) == -22:
-				return -22
+			self.Bubble_Top_20_List(word, self.word_count_table[word])
+	
 
 		return list(this_word_count.items())
 
 	def Add_Word_Count(self, word, add_count):
+		"""Add count to the word_count_table at word"""
 		if  self.word_count_table.get(word) == None:
 			self.word_count_table[word] = add_count
 		else:
@@ -101,7 +97,7 @@ class New_Query_Counter(object):
 		return
 
 	def Bubble_Top_20_List(self, word, count):
-
+		"""Search for word in top 20 list, otherwise try to append and bubble into place"""
 		index = Get_List_Index(self.top_20_list, word)
 		this_count = self.word_count_table[word]
 
@@ -127,8 +123,6 @@ class New_Query_Counter(object):
 
 		#continue to bubble element from the end until it reaches the front or is not greater
 		while index > 0:
-
-
 			next_count = self.word_count_table[self.top_20_list[index-1]]
 
 			if this_count > next_count:
@@ -141,8 +135,11 @@ class New_Query_Counter(object):
 
 
 
-@route('/index', method='GET')
-def index():
+@route('/', method='GET')
+def first_page():
+	"""If there is no query_input string, just pass the top_20_list to Template,
+	thus printing the top 20 list and input form.
+	Otherwise pass the query result list as well"""
 	Query_Counter = Load_And_Unserialize('the_counter.txt')
 
 	if Query_Counter == -1:
@@ -157,8 +154,6 @@ def index():
 
 	else:
 		query_results = Query_Counter.Process_Query(query)
-		if query_results == -22:
-			return 'DAFUNKLES'
 
 		top_20_tuples = Query_Counter.Get_Top_20_Tuples()
 		Serialize_And_Store('the_counter.txt', Query_Counter)
@@ -177,7 +172,7 @@ front_template= """
 		%if Tuples_List != None and len(Tuples_List) > 0:
 		<div>
 		History Table
-			<table name="history">
+			<table name="history" id="history">
 				<tr>
 					<td>
 						Word
@@ -203,7 +198,7 @@ front_template= """
 		%if Results_List != None and len(Results_List) > 0:
 		<div>
 			Results Table
-			<table name="results">
+			<table name="results" id="results">
 				<tr>
 					<td>
 						Word
